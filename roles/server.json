@@ -1,0 +1,9 @@
+{
+  "name": "server",
+  "chef_type": "role",
+  "json_class": "Chef::Role",
+  "default_attributes": {},
+  "run_list": [
+    "recipe[fail2ban]"
+  ]
+}

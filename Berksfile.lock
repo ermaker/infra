@@ -1,0 +1,24 @@
+DEPENDENCIES
+  fail2ban
+  git
+  m
+    path: cookbooks/m
+
+GRAPH
+  build-essential (2.2.3)
+  chef_handler (1.2.0)
+  dmg (2.2.2)
+  fail2ban (2.2.1)
+    yum (~> 3.0)
+    yum-epel (>= 0.0.0)
+  git (4.3.0)
+    build-essential (>= 0.0.0)
+    dmg (>= 0.0.0)
+    windows (>= 0.0.0)
+    yum-epel (>= 0.0.0)
+  m (0.1.0)
+  windows (1.37.0)
+    chef_handler (>= 0.0.0)
+  yum (3.6.3)
+  yum-epel (0.6.2)
+    yum (~> 3.2)
