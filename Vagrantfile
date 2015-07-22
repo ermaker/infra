@@ -8,6 +8,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision :chef_solo do |chef|
     chef.roles_path = "roles"
     chef.add_role("server")
+    chef.add_recipe("git")
     chef.add_recipe("m::mshard")
   end
 
@@ -15,7 +16,7 @@ Vagrant.configure("2") do |config|
     d.build_image "/opt/mshard_server", args: "-t mshard_server"
 
     d.run "mshard_server", args: [
-      "-P", 
+      "-P",
       *ENV.select {|k,v| k =~ /^MSHARD_/}.map do |k,v|
         "-e " + k[/^MSHARD_(.*)$/, 1] + "=" + v
       end
