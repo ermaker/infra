@@ -8,25 +8,48 @@ Vagrant.configure("2") do |config|
   config.vm.provision :chef_solo do |chef|
     chef.roles_path = "roles"
     chef.add_role("server")
-    chef.add_recipe("git")
-    chef.add_recipe("m::mshard")
   end
 
   config.vm.provision :docker do |d|
-    d.build_image "/opt/mshard_server", args: "-t mshard_server"
-
-    d.run "mshard_server", args: [
-      "-P",
-      *ENV.select {|k,v| k =~ /^MSHARD_/}.map do |k,v|
-        "-e " + k[/^MSHARD_(.*)$/, 1] + "=" + v
-      end
+    d.run "mongo", args: [
+      "-v /opt/mongo/data:/data"
     ].join(" ")
+    d.run "mshard",
+      image: "ermaker/mshard_server",
+      args: [
+        *ENV.select {|k,v| k =~ /^MSHARD_/}.map do |k,v|
+          "-e " + k[/^MSHARD_(.*)$/, 1] + "=" + v
+        end
+      ].join(" ")
+    d.run "honeypot-db-setup",
+      image: "ermaker/honeypot:develop",
+      cmd: "foreman run rake db:setup",
+      daemonize: false,
+      restart: "no",
+      args: [
+        "--rm",
+        "--link mongo:mongo",
+        "--link mshard:mshard",
+        *ENV.select {|k,v| k =~ /^HONEYPOT_/}.map do |k,v|
+          "-e " + k[/^HONEYPOT_(.*)$/, 1] + "=" + v
+        end
+      ].join(" ")
+    d.run "honeypot",
+      image: "ermaker/honeypot",
+      args: [
+        "--link mongo:mongo",
+        "--link mshard:mshard",
+        *ENV.select {|k,v| k =~ /^HONEYPOT_/}.map do |k,v|
+          "-e " + k[/^HONEYPOT_(.*)$/, 1] + "=" + v
+        end
+      ].join(" ")
     d.run "nginx", args: [
       "-p 80:80",
       "-v /vagrant/html/:/usr/share/nginx/html:ro",
       "-v /vagrant/nginx.conf/conf.d/proxy.conf:/etc/nginx/conf.d/proxy.conf:ro",
       "-v /vagrant/nginx.conf/conf.d/proxy/:/etc/nginx/conf.d/proxy:ro",
-      "--link mshard_server"
+      "--link mshard:mshard",
+      "--link honeypot:honeypot"
     ].join(" ")
   end
 
