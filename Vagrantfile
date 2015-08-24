@@ -11,18 +11,26 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provision :docker do |d|
-    d.run "mongo", args: [
-      "-v /opt/mongo/data:/data"
-    ].join(" ")
+    d.run "redis",
+      cmd: "redis-server --appendonly yes",
+      args: [
+        "-v /opt/redis/data:/data"
+      ].join(" ")
+    d.run "mongo",
+      cmd: "--smallfiles",
+      args: [
+        "-v /opt/mongo/data/db:/data/db"
+      ].join(" ")
     d.run "mshard",
       image: "ermaker/mshard_server",
       args: [
+        "--link redis:redis",
         *ENV.select {|k,v| k =~ /^MSHARD_/}.map do |k,v|
           "-e " + k[/^MSHARD_(.*)$/, 1] + "=" + v
         end
       ].join(" ")
     d.run "honeypot-db-setup",
-      image: "ermaker/honeypot:develop",
+      image: "ermaker/honeypot",
       cmd: "foreman run rake db:setup",
       daemonize: false,
       restart: "no",
