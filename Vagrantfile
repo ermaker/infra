@@ -11,6 +11,12 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provision :docker do |d|
+    d.pull_images "redis"
+    d.pull_images "mongo"
+    d.pull_images "ermaker/mshard_server"
+    d.pull_images "ermaker/honeypot"
+    d.pull_images "nginx"
+
     d.run "redis",
       cmd: "redis-server --appendonly yes",
       args: [
