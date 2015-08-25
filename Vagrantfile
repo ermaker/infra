@@ -57,13 +57,11 @@ Vagrant.configure("2") do |config|
           "-e " + k[/^HONEYPOT_(.*)$/, 1] + "=" + v
         end
       ].join(" ")
-    d.run "nginx", args: [
+    d.run "nginx",
+      image:"jwilder/nginx-proxy", args: [
       "-p 80:80",
+      "-v /var/run/docker.sock:/tmp/docker.sock:ro",
       "-v /vagrant/html/:/usr/share/nginx/html:ro",
-      "-v /vagrant/nginx.conf/conf.d/proxy.conf:/etc/nginx/conf.d/proxy.conf:ro",
-      "-v /vagrant/nginx.conf/conf.d/proxy/:/etc/nginx/conf.d/proxy:ro",
-      "--link mshard:mshard",
-      "--link honeypot:honeypot"
     ].join(" ")
   end
 
