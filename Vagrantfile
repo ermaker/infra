@@ -24,8 +24,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision :shell, inline: <<-EOC
     cd /vagrant/dockers
-    docker-compose up -d
     docker-compose run --rm honeypot foreman run rake db:setup
+    docker-compose up -d
   EOC
 
   config.vm.provider :aws do |aws,override|
