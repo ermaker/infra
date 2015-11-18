@@ -10,60 +10,23 @@ Vagrant.configure("2") do |config|
     chef.add_role("server")
   end
 
-  config.vm.provision :docker do |d|
-    d.pull_images "redis"
-    d.pull_images "mongo"
-    d.pull_images "ermaker/mshard_server"
-    d.pull_images "ermaker/honeypot"
-    d.pull_images "nginx"
+  config.vm.provision :docker
 
-    d.run "redis",
-      cmd: "redis-server --appendonly yes",
-      args: [
-        "-v /opt/redis/data:/data"
-      ].join(" ")
-    d.run "mongo",
-      cmd: "--smallfiles",
-      args: [
-        "-v /opt/mongo/data/db:/data/db"
-      ].join(" ")
-    d.run "mshard",
-      image: "ermaker/mshard_server",
-      args: [
-        "--link redis:redis",
-        *ENV.select {|k,v| k =~ /^MSHARD_/}.map do |k,v|
-          "-e " + k[/^MSHARD_(.*)$/, 1] + "=" + v
-        end
-      ].join(" ")
-    d.run "honeypot-db-setup",
-      image: "ermaker/honeypot",
-      cmd: "foreman run rake db:setup",
-      daemonize: false,
-      restart: "no",
-      args: [
-        "--rm",
-        "--link mongo:mongo",
-        "--link mshard:mshard",
-        *ENV.select {|k,v| k =~ /^HONEYPOT_/}.map do |k,v|
-          "-e " + k[/^HONEYPOT_(.*)$/, 1] + "=" + v
-        end
-      ].join(" ")
-    d.run "honeypot",
-      image: "ermaker/honeypot",
-      args: [
-        "--link mongo:mongo",
-        "--link mshard:mshard",
-        *ENV.select {|k,v| k =~ /^HONEYPOT_/}.map do |k,v|
-          "-e " + k[/^HONEYPOT_(.*)$/, 1] + "=" + v
-        end
-      ].join(" ")
-    d.run "nginx",
-      image:"jwilder/nginx-proxy", args: [
-      "-p 80:80",
-      "-v /var/run/docker.sock:/tmp/docker.sock:ro",
-      "-v /vagrant/html/:/usr/share/nginx/html:ro",
-    ].join(" ")
-  end
+  config.vm.provision :shell, inline: <<-EOC
+    test -e /usr/local/bin/docker-compose || \\
+    curl -L https://github.com/docker/compose/releases/download/1.5.1/docker-compose-`uname -s`-`uname -m` \\
+      | sudo tee /usr/local/bin/docker-compose > /dev/null
+    sudo chmod +x /usr/local/bin/docker-compose
+    test -e /etc/bash_completion.d/docker-compose || \\
+    curl -L https://raw.githubusercontent.com/docker/compose/$(docker-compose --version | awk 'NR==1{print $NF}')/contrib/completion/bash/docker-compose \\
+      | sudo tee /etc/bash_completion.d/docker-compose > /dev/null
+  EOC
+
+  config.vm.provision :shell, inline: <<-EOC
+    cd /vagrant/dockers
+    docker-compose up -d
+    docker-compose run --rm honeypot foreman run rake db:setup
+  EOC
 
   config.vm.provider :aws do |aws,override|
     override.vm.box = "dummy"
