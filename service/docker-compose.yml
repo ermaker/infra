@@ -44,3 +44,10 @@ nginx-proxy:
   ports:
     - '80:80'
   restart: always
+fluentd:
+  image: ermaker/fluentd
+  env_file: .env.fluentd
+  volumes:
+    - ./fluentd/td-agent.conf:/etc/td-agent/td-agent.conf:ro
+    - /var/lib/docker:/var/lib/docker
+  restart: always
