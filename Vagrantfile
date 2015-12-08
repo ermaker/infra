@@ -35,8 +35,8 @@ Vagrant.configure("2") do |config|
     override.vm.box = "dummy"
     override.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"
 
-    aws.access_key_id = ENV["AWS_ACCESS_KEY_ID"]
-    aws.secret_access_key = ENV["AWS_SECRET_ACCESS_KEY"]
+    aws.access_key_id = ENV["ACCESS_KEY_ID"]
+    aws.secret_access_key = ENV["SECRET_ACCESS_KEY"]
 
     aws.keypair_name = "default"
     override.ssh.private_key_path = "default.pem"
@@ -48,7 +48,7 @@ Vagrant.configure("2") do |config|
     aws.instance_type = "t2.micro"
     aws.security_groups = "default_instance"
     aws.tags = {Name: "Test with Vagrant"}
-    aws.elastic_ip = ENV['AWS_ELASTIC_IP']
-    override.vm.hostname = ENV['AWS_HOSTNAME']
+    aws.elastic_ip = ENV['ELASTIC_IP']
+    override.vm.hostname = ENV['HOSTNAME']
   end
 end
