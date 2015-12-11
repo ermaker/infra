@@ -27,6 +27,7 @@ Vagrant.configure("2") do |config|
     ./mkdirs.sh
     docker-compose pull
     docker-compose stop
+    docker-compose rm -f
     docker-compose run --rm honeypot foreman run rake db:setup
     docker-compose up -d
   EOC
