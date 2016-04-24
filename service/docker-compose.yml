@@ -4,12 +4,12 @@ redis:
   volumes:
     - /opt/redis/data:/data
   restart: always
-mongo:
-  image: mongo
-  command: --smallfiles
-  volumes:
-    - /opt/mongo/data/db:/data/db
-  restart: always
+# mongo:
+#   image: mongo
+#   command: --smallfiles
+#   volumes:
+#     - /opt/mongo/data/db:/data/db
+#   restart: always
 mshard:
   image: ermaker/mshard_server
   links:
@@ -18,18 +18,18 @@ mshard:
   environment:
     - VIRTUAL_HOST=mshard.ermaker.tk
   restart: always
-honeypot:
-  image: ermaker/honeypot
-  links:
-    - mongo
-    - mshard
-  env_file: .env.honeypot
-  environment:
-    - VIRTUAL_HOST=honeypot.ermaker.tk
-    - RAILS_ENV=production
-    - MONGO_DATABASE=honeypot_production
-    - WEB_CONCURRENCY=4
-  restart: always
+# honeypot:
+#   image: ermaker/honeypot
+#   links:
+#     - mongo
+#     - mshard
+#   env_file: .env.honeypot
+#   environment:
+#     - VIRTUAL_HOST=honeypot.ermaker.tk
+#     - RAILS_ENV=production
+#     - MONGO_DATABASE=honeypot_production
+#     - WEB_CONCURRENCY=4
+#   restart: always
 nginx:
   image: nginx
   volumes:

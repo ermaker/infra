@@ -5,16 +5,11 @@ require "dotenv"
 Dotenv.load
 
 Vagrant.configure("2") do |config|
-  config.vm.provision :chef_solo do |chef|
-    chef.roles_path = "roles"
-    chef.add_role("server")
-  end
-
   config.vm.provision :docker
 
   config.vm.provision :shell, inline: <<-EOC
     test -e /usr/local/bin/docker-compose || \\
-    curl -sSL https://github.com/docker/compose/releases/download/1.5.1/docker-compose-`uname -s`-`uname -m` \\
+    curl -sSL https://github.com/docker/compose/releases/download/1.6.0/docker-compose-`uname -s`-`uname -m` \\
       | sudo tee /usr/local/bin/docker-compose > /dev/null
     sudo chmod +x /usr/local/bin/docker-compose
     test -e /etc/bash_completion.d/docker-compose || \\
@@ -26,9 +21,8 @@ Vagrant.configure("2") do |config|
     cd /vagrant/service
     ./mkdirs.sh
     docker-compose pull
-    docker-compose stop
-    docker-compose rm -f
-    docker-compose run --rm honeypot foreman run rake db:setup
+    docker-compose down
+    # docker-compose run --rm honeypot foreman run rake db:setup
     docker-compose up -d
   EOC
 
@@ -42,13 +36,13 @@ Vagrant.configure("2") do |config|
     aws.keypair_name = "default"
     override.ssh.private_key_path = "default.pem"
 
-    aws.ami = "ami-20b6aa21"
+    aws.ami = "ami-09dc1267"
     override.ssh.username = "ubuntu"
 
-    aws.region = "ap-northeast-1"
-    aws.instance_type = "t2.micro"
-    aws.security_groups = "default_instance"
-    aws.tags = {Name: "Test with Vagrant"}
+    aws.region = "ap-northeast-2"
+    aws.instance_type = "t2.nano"
+    aws.security_groups = "default_"
+    aws.tags = {Name: "Default"}
     aws.elastic_ip = ENV['ELASTIC_IP']
     override.vm.hostname = ENV['HOSTNAME']
   end
